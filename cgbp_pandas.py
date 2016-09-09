@@ -6,19 +6,21 @@ from functools import reduce
 
 
 
-def make_empty_table(variables, subset_keys = None):
+def make_empty_table(variables, subset_keys = None, fill_value = 0):
     if subset_keys:
         variables = var_subset(variables, subset_keys)
     varnames = sorted(variables.keys())
     i = pd.MultiIndex.from_product([variables[var] for var in varnames], names = varnames)
-    return pd.DataFrame(0, index = i, columns = ['value']).reset_index()
-
+    return pd.DataFrame(fill_value, index = i, columns = ['value']).reset_index()
 
 def column_varnames(column):
     return sorted([var for var in column if var != 'value'])
 
+def table_varnames(tab):
+    return column_varnames(tab.columns)
+
 def get_columns(tab, assignment):
-    column_bools = [tab[v] == assignment[v] for v in column_varnames(tab.columns) if v in assignment.keys()]
+    column_bools = [tab[v] == assignment[v] for v in table_varnames(tab) if v in assignment.keys()]
     return reduce(lambda x,y: x & y, column_bools)
 
 def get_assignment(tab, assignment):
@@ -65,7 +67,6 @@ phi1 = make_empty_table(variables, ['A', 'C'])
 phi2 = make_empty_table(variables, ['B', 'D'])
 phi3 = make_empty_table(variables, ['C', 'D'])
 
-
 for (a, b, val) in [(0, 0, 10),
                     (0, 1, 0.1),
                     (1, 0, 0.1),
@@ -92,15 +93,55 @@ for (c, d, val) in [(0, 0, 0.5),
     set_assignment(phi3, {'C': c, 'D': d}, val)
 
 
+# list of all factors
 factors = [phi0, phi1, phi2, phi3]
 
-cluster_factors = [
+# for every cluster: list of corresponding factor indices
+clusters = [
     [0],
     [1,2,3]
 ]
 
+# for every cluster: list of actual factors
+cluster_factors = [
+    [factors[f] for f in c]
+    for c in clusters
+]
+
+# for every cluster: union set of all variables in contained factors
+cluster_vars = [
+    set(
+        reduce(
+            lambda x, y: x + y,
+            [table_varnames(f) for f in c]
+        )
+    )
+    for c in cluster_factors
+]
+
+# list of all cluster edges (bidirectional) with indices like (0, 1) for edge between clusters 0 and 1
+cluster_edges = list({
+    (c1, c2)
+    for c1, var1 in enumerate(cluster_vars)
+    for c2, var2 in enumerate(cluster_vars)
+    if var1 & var2 and c1 != c2
+})
+
+# for every edge: sepset of variables
+edge_sepsets = [
+    cluster_vars[c1] & cluster_vars[c2]
+    for (c1, c2) in cluster_edges
+]
+
+# for every cluster: initial potential as sum of all contained factors
 initial_potentials = [
-    reduce(multiply_tables, [factors[f] for f in cluster])
-    for cluster in cluster_factors
+    reduce(multiply_tables, [f for f in c])
+    for c in cluster_factors
+]
+
+# initialize beliefs: probability tables over all sepsets with value = 1
+beliefs = [
+    make_empty_table(variables, sepset, fill_value = 1)
+    for sepset in edge_sepsets
 ]
 
