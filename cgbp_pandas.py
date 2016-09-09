@@ -5,6 +5,14 @@ import pandas as pd
 from functools import reduce
 
 
+# ----------------------------- SETUP ----------------------------- #
+# This is the only part, where the graph and underlying factors are defined
+
+
+# First: define some helper functions.
+
+def var_subset(variables, subset_keys):
+    return {key: variables[key] for key in subset_keys}
 
 def make_empty_table(variables, subset_keys = None, fill_value = 0):
     if subset_keys:
@@ -23,14 +31,65 @@ def get_columns(tab, assignment):
     column_bools = [tab[v] == assignment[v] for v in table_varnames(tab) if v in assignment.keys()]
     return reduce(lambda x,y: x & y, column_bools)
 
-def get_assignment(tab, assignment):
-    return tab.loc[get_columns(tab, assignment)]
-
 def set_assignment(tab, assignment, value):
     tab.loc[get_columns(tab, assignment), 'value'] = value
 
 
+# Now the actual setup:
 
+# available variables and their possible values
+variables = {
+    'A': [0, 1],
+    'B': [0, 1],
+    'C': [0, 1],
+    'D': [0, 1]
+}
+
+# initialize empty factors over thei variables
+phi0 = make_empty_table(variables, ['A', 'B'])
+phi1 = make_empty_table(variables, ['A', 'C'])
+phi2 = make_empty_table(variables, ['B', 'D'])
+phi3 = make_empty_table(variables, ['C', 'D'])
+
+# set values for all factors
+for (a, b, val) in [(0, 0, 10),
+                    (0, 1, 0.1),
+                    (1, 0, 0.1),
+                    (1, 1, 10)]:
+    set_assignment(phi0, {'A': a, 'B': b}, val)
+for (a, c, val) in [(0, 0, 5),
+                    (0, 1, 0.2),
+                    (1, 0, 0.2),
+                    (1, 1, 5)]:
+    set_assignment(phi1, {'A': a, 'C': c}, val)
+for (b, d, val) in [(0, 0, 5),
+                    (0, 1, 0.2),
+                    (1, 0, 0.2),
+                    (1, 1, 5)]:
+    set_assignment(phi2, {'B': b, 'D': d}, val)
+for (c, d, val) in [(0, 0, 0.5),
+                    (0, 1, 1),
+                    (1, 0, 20),
+                    (1, 1, 2.5)]:
+    set_assignment(phi3, {'C': c, 'D': d}, val)
+
+# list of all factors
+factors = [phi0, phi1, phi2, phi3]
+
+# for every cluster: list of corresponding factor indices
+clusters = [
+    [0],
+    [1,2,3]
+]
+
+
+
+
+
+# ----------------------------- COMPUTATION ----------------------------- #
+# Actual Cluster Graph Belief Propagation part now that everything is set up.
+
+# Since its too complex for a few lines, do table multiplication in helper function.
 def multiply_tables(tab1, tab2):
     varnames_intersect = column_varnames(tab1.columns & tab2.columns)
     varnames_union = column_varnames(tab1.columns | tab2.columns)
@@ -45,62 +104,6 @@ def multiply_tables(tab1, tab2):
     tab3 = tab3[varnames_union + ['value']]
     return tab3
 
-
-
-def var_subset(variables, subset_keys):
-    return {key: variables[key] for key in subset_keys}
-
-def var_union(vars1, vars2):
-    return dict(item for item in d.items() for d in [vars1, vars2])
-
-
-variables = {
-    'A': [0, 1],
-    'B': [0, 1],
-    'C': [0, 1],
-    'D': [0, 1]
-}
-
-
-phi0 = make_empty_table(variables, ['A', 'B'])
-phi1 = make_empty_table(variables, ['A', 'C'])
-phi2 = make_empty_table(variables, ['B', 'D'])
-phi3 = make_empty_table(variables, ['C', 'D'])
-
-for (a, b, val) in [(0, 0, 10),
-                    (0, 1, 0.1),
-                    (1, 0, 0.1),
-                    (1, 1, 10)]:
-    set_assignment(phi0, {'A': a, 'B': b}, val)
-
-
-for (a, c, val) in [(0, 0, 5),
-                    (0, 1, 0.2),
-                    (1, 0, 0.2),
-                    (1, 1, 5)]:
-    set_assignment(phi1, {'A': a, 'C': c}, val)
-
-for (b, d, val) in [(0, 0, 5),
-                    (0, 1, 0.2),
-                    (1, 0, 0.2),
-                    (1, 1, 5)]:
-    set_assignment(phi2, {'B': b, 'D': d}, val)
-
-for (c, d, val) in [(0, 0, 0.5),
-                    (0, 1, 1),
-                    (1, 0, 20),
-                    (1, 1, 2.5)]:
-    set_assignment(phi3, {'C': c, 'D': d}, val)
-
-
-# list of all factors
-factors = [phi0, phi1, phi2, phi3]
-
-# for every cluster: list of corresponding factor indices
-clusters = [
-    [0],
-    [1,2,3]
-]
 
 # for every cluster: list of actual factors
 cluster_factors = [
