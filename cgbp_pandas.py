@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 %matplotlib inline
 import pandas as pd
 from functools import reduce
+import random
 
 
 # ----------------------------- SETUP ----------------------------- #
@@ -14,7 +15,10 @@ from functools import reduce
 def var_subset(variables, subset_keys):
     return {key: variables[key] for key in subset_keys}
 
+
 def make_empty_table(variables, subset_keys = None, fill_value = 0):
+    if subset_keys == []:
+        return pd.DataFrame(fill_value, index = [0], columns = ['value'])
     if subset_keys:
         variables = var_subset(variables, subset_keys)
     varnames = sorted(variables.keys())
@@ -33,6 +37,9 @@ def get_columns(tab, assignment):
 
 def set_assignment(tab, assignment, value):
     tab.loc[get_columns(tab, assignment), 'value'] = value
+
+def get_assignment(tab, assignment):
+    return tab.loc[get_columns(tab, assignment), 'value']
 
 
 # Now the actual setup:
@@ -79,7 +86,9 @@ factors = [phi0, phi1, phi2, phi3]
 # for every cluster: list of corresponding factor indices
 clusters = [
     [0],
-    [1,2,3]
+    [1],
+    [2],
+    [3]
 ]
 
 
@@ -103,6 +112,10 @@ def multiply_tables(tab1, tab2):
     tab3['value'] = tab3['value_x'] * tab3['value_y']
     tab3 = tab3[varnames_union + ['value']]
     return tab3
+
+def marginalize(tab, margin_vars):
+    vars_to_keep = [var for var in table_varnames(tab) if var not in margin_vars]
+    return (tab.groupby(vars_to_keep).sum())[['value']].reset_index()
 
 
 # for every cluster: list of actual factors
@@ -142,9 +155,55 @@ initial_potentials = [
     for c in cluster_factors
 ]
 
-# initialize beliefs: probability tables over all sepsets with value = 1
-beliefs = [
+# initialize messages: probability tables over all sepsets with value = 1
+messages = [
     make_empty_table(variables, sepset, fill_value = 1)
     for sepset in edge_sepsets
 ]
 
+
+
+
+
+
+
+# ----------------------------- SIMULATION ----------------------------- #
+# Ok I lied... but now finally the simulation will run!
+
+def pick_edge_for_update(edges):
+    idx = random.randint(0, len(edges) - 1)
+    return idx, edges[idx]
+
+
+iterations = 100
+coll = []
+
+for _ in range(iterations):
+
+    # pick some edge/msg to update
+    edge_idx, (i, j) = pick_edge_for_update(cluster_edges)
+    msg = messages[edge_idx]
+
+    # collect all incoming msgs that do not come from the edge to update
+    incoming_msgs = [
+        msg
+        for (c1, c2), msg in zip(cluster_edges, messages)
+        if c2 == i and c1 != j
+    ]
+
+    # multiply the tables from all incoming msgs
+    initial_table = make_empty_table([], [], fill_value = 1)
+    incoming_msgs_prod = reduce(multiply_tables, incoming_msgs, initial_table)
+
+    # update potential
+    initial_potentials[i] = multiply_tables(initial_potentials[i], incoming_msgs_prod)
+
+    # update message with marginalization over potential
+    cluster_vars_without_sepset = cluster_vars[i] - edge_sepsets[edge_idx]
+    messages[edge_idx] = marginalize(initial_potentials[i], cluster_vars_without_sepset)
+
+    # save data
+    coll.append(float(get_assignment(initial_potentials[0], {'A':1, 'B':1})))
+
+# It stays the same and then explodes at one point. Gotta make more plots of more values at once. Not today.
+plt.plot(coll)
