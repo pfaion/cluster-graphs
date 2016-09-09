@@ -32,6 +32,12 @@ def set_assignment(tab, assignment, value):
 def multiply_tables(tab1, tab2):
     varnames_intersect = column_varnames(tab1.columns & tab2.columns)
     varnames_union = column_varnames(tab1.columns | tab2.columns)
+    if not varnames_intersect:
+        tab1 = tab1.copy()
+        tab2 = tab2.copy()
+        tab1['mergekey'] = 1
+        tab2['mergekey'] = 1
+        varnames_intersect = 'mergekey'
     tab3 = pd.merge(tab1, tab2, on = varnames_intersect)
     tab3['value'] = tab3['value_x'] * tab3['value_y']
     tab3 = tab3[varnames_union + ['value']]
@@ -54,32 +60,47 @@ variables = {
 }
 
 
-phi1 = make_empty_table(variables, ['A', 'B'])
-phi2 = make_empty_table(variables, ['A', 'C'])
-phi3 = make_empty_table(variables, ['B', 'D'])
-phi4 = make_empty_table(variables, ['C', 'D'])
+phi0 = make_empty_table(variables, ['A', 'B'])
+phi1 = make_empty_table(variables, ['A', 'C'])
+phi2 = make_empty_table(variables, ['B', 'D'])
+phi3 = make_empty_table(variables, ['C', 'D'])
+
 
 for (a, b, val) in [(0, 0, 10),
                     (0, 1, 0.1),
                     (1, 0, 0.1),
                     (1, 1, 10)]:
-    set_assignment(phi1, {'A': a, 'B': b}, val)
+    set_assignment(phi0, {'A': a, 'B': b}, val)
 
 
 for (a, c, val) in [(0, 0, 5),
                     (0, 1, 0.2),
                     (1, 0, 0.2),
                     (1, 1, 5)]:
-    set_assignment(phi2, {'A': a, 'C': c}, val)
+    set_assignment(phi1, {'A': a, 'C': c}, val)
 
 for (b, d, val) in [(0, 0, 5),
                     (0, 1, 0.2),
                     (1, 0, 0.2),
                     (1, 1, 5)]:
-    set_assignment(phi2, {'A': a, 'C': c}, val)
+    set_assignment(phi2, {'B': b, 'D': d}, val)
 
 for (c, d, val) in [(0, 0, 0.5),
                     (0, 1, 1),
                     (1, 0, 20),
                     (1, 1, 2.5)]:
-    set_assignment(phi2, {'A': a, 'C': c}, val)
+    set_assignment(phi3, {'C': c, 'D': d}, val)
+
+
+factors = [phi0, phi1, phi2, phi3]
+
+cluster_factors = [
+    [0],
+    [1,2,3]
+]
+
+initial_potentials = [
+    reduce(multiply_tables, [factors[f] for f in cluster])
+    for cluster in cluster_factors
+]
+
