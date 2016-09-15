@@ -54,31 +54,31 @@ variables = {
 
 # initialize empty factors over thei variables
 phi0 = make_empty_table(variables, ['A', 'B'])
-phi1 = make_empty_table(variables, ['A', 'C'])
-phi2 = make_empty_table(variables, ['B', 'D'])
-phi3 = make_empty_table(variables, ['C', 'D'])
+phi1 = make_empty_table(variables, ['B', 'C'])
+phi2 = make_empty_table(variables, ['C', 'D'])
+phi3 = make_empty_table(variables, ['D', 'A'])
 
 # set values for all factors
-for (a, b, val) in [(0, 0, 10),
-                    (0, 1, 0.1),
-                    (1, 0, 0.1),
+for (a, b, val) in [(0, 0, 30),
+                    (0, 1, 5),
+                    (1, 0, 1),
                     (1, 1, 10)]:
     set_assignment(phi0, {'A': a, 'B': b}, val)
-for (a, c, val) in [(0, 0, 5),
-                    (0, 1, 0.2),
-                    (1, 0, 0.2),
-                    (1, 1, 5)]:
-    set_assignment(phi1, {'A': a, 'C': c}, val)
-for (b, d, val) in [(0, 0, 5),
-                    (0, 1, 0.2),
-                    (1, 0, 0.2),
-                    (1, 1, 5)]:
-    set_assignment(phi2, {'B': b, 'D': d}, val)
-for (c, d, val) in [(0, 0, 0.5),
+for (b, c, val) in [(0, 0, 100),
                     (0, 1, 1),
-                    (1, 0, 20),
-                    (1, 1, 2.5)]:
-    set_assignment(phi3, {'C': c, 'D': d}, val)
+                    (1, 0, 1),
+                    (1, 1, 100)]:
+    set_assignment(phi1, {'B': b, 'C': c}, val)
+for (c, d, val) in [(0, 0, 1),
+                    (0, 1, 100),
+                    (1, 0, 100),
+                    (1, 1, 1)]:
+    set_assignment(phi2, {'C': c, 'D': d}, val)
+for (d, a, val) in [(0, 0, 100),
+                    (0, 1, 1),
+                    (1, 0, 1),
+                    (1, 1, 100)]:
+    set_assignment(phi3, {'D': d, 'A': a}, val)
 
 # list of all factors
 factors = [phi0, phi1, phi2, phi3]
@@ -177,6 +177,7 @@ def pick_edge_for_update(edges):
 
 iterations = 100
 coll = []
+beliefs_coll = []
 
 for _ in range(iterations):
 
@@ -196,14 +197,52 @@ for _ in range(iterations):
     incoming_msgs_prod = reduce(multiply_tables, incoming_msgs, initial_table)
 
     # update potential
-    initial_potentials[i] = multiply_tables(initial_potentials[i], incoming_msgs_prod)
+    incoming_with_potential = multiply_tables(initial_potentials[i], incoming_msgs_prod)
 
     # update message with marginalization over potential
     cluster_vars_without_sepset = cluster_vars[i] - edge_sepsets[edge_idx]
-    messages[edge_idx] = marginalize(initial_potentials[i], cluster_vars_without_sepset)
+    messages[edge_idx] = marginalize(incoming_with_potential, cluster_vars_without_sepset)
 
-    # save data
-    coll.append(float(get_assignment(initial_potentials[0], {'A':1, 'B':1})))
+    all_incoming_msgs_prod = [
+        reduce(multiply_tables, [msg for (c1, c2), msg in zip(cluster_edges, messages) if c2 == i])
+        for i, _ in enumerate(clusters)
+    ]
+
+    current_beliefs = [
+        multiply_tables(initial_potentials[i], all_incoming_msgs_prod[i])
+        for i, _ in enumerate(clusters)
+    ]
+
+    beliefs_coll.append(current_beliefs)
+
+    # # save data
+    # all_msgs = reduce(multiply_tables, messages)
+    # Z = float(all_msgs['value'].sum())
+    # plot_msg = float(get_assignment(messages[0], {'A':0}))
+    # msg_prob = plot_msg / Z
+    # print(msg_prob)
+
+    #coll.append(plot_msg/all_msgs)
 
 # It stays the same and then explodes at one point. Gotta make more plots of more values at once. Not today.
-plt.plot(coll)
+
+#plt.plot(coll)
+
+
+
+
+
+
+sums = [reduce(multiply_tables, beliefs)['value'].sum() for beliefs in beliefs_coll]
+
+
+for i, _ in enumerate(clusters):
+    for val_i in range(len(initial_potentials[i])):
+        plt.plot([beliefs[i]['value'][val_i]/sum_ for beliefs, sum_ in zip(beliefs_coll, sums)])
+
+
+
+
+
+
+
