@@ -231,14 +231,13 @@ for _ in range(iterations):
 
 
 
-
-
 sums = [reduce(multiply_tables, beliefs)['value'].sum() for beliefs in beliefs_coll]
 
 
 for i, _ in enumerate(clusters):
     for val_i in range(len(initial_potentials[i])):
         plt.plot([beliefs[i]['value'][val_i]/sum_ for beliefs, sum_ in zip(beliefs_coll, sums)])
+
 
 
 
