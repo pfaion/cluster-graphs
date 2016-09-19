@@ -12,34 +12,97 @@ import random
 
 # First: define some helper functions.
 
-def var_subset(variables, subset_keys):
-    return {key: variables[key] for key in subset_keys}
-
-
 def make_empty_table(variables, subset_keys = None, fill_value = 0):
+    """Creates an empty table-dataframe with rows for all variables.
+
+        variables (dict): lists of values for every variable
+        subset_keys: list of variables to include in the table
+        fill_value: initialization value
+
+        returns: empty table-dataframe with a row for every variable combination
+    """
+
+    # if list of subset is set empty: return table with only one entry
     if subset_keys == []:
         return pd.DataFrame(fill_value, index = [0], columns = ['value'])
-    if subset_keys:
-        variables = var_subset(variables, subset_keys)
-    varnames = sorted(variables.keys())
-    i = pd.MultiIndex.from_product([variables[var] for var in varnames], names = varnames)
-    return pd.DataFrame(fill_value, index = i, columns = ['value']).reset_index()
 
-def column_varnames(column):
-    return sorted([var for var in column if var != 'value'])
+    # filter variable subset
+    if subset_keys:
+        variables = {key: variables[key] for key in subset_keys}
+
+    # create a new pandas dataframe
+    # one row for every combination of variable values in the subset
+    # (by taking the cartesian product)
+    varnames = sorted(variables.keys())
+    varvalues = [variables[var] for var in varnames]
+    i = pd.MultiIndex.from_product(varvalues, names = varnames)
+    df = pd.DataFrame(fill_value, index = i, columns = ['value']).reset_index()
+    return df
+
+
+
+
+def column_varnames(columns):
+    """Extract the variable names from a columns object.
+
+        columns: a dataframe-columns object
+
+        returns: a list of variable names
+    """
+
+    return sorted([var for var in columns if var != 'value'])
+
+
 
 def table_varnames(tab):
+    """Extract the variable names from a table-dataframe.
+
+        tab: a table-dataframe
+
+        returns: a list of variable names
+    """
+
     return column_varnames(tab.columns)
 
-def get_columns(tab, assignment):
-    column_bools = [tab[v] == assignment[v] for v in table_varnames(tab) if v in assignment.keys()]
-    return reduce(lambda x,y: x & y, column_bools)
+
+
+
+def get_row_bools(tab, assignment):
+    """For a given table and assignment, check which rows fit.
+
+        tab: table-dataframe
+        assignment (dict): variable assignment
+
+        returns: table with booleans, indicating if the rows fit the assignment
+    """
+
+    # look at the table column-wise and check for every column, which rows to
+    # select for the given assignment
+    row_bools_each_column = [
+        tab[v] == assignment[v]
+        for v in table_varnames(tab)
+        if v in assignment.keys()
+    ]
+
+    # reduce the list for all columns with AND, yields the booleans for the
+    # complete assignment
+    return reduce(lambda x,y: x & y, row_bools_each_column)
+
+
+
+
 
 def set_assignment(tab, assignment, value):
-    tab.loc[get_columns(tab, assignment), 'value'] = value
+    """Write values in table for variable assignment.
 
-def get_assignment(tab, assignment):
-    return tab.loc[get_columns(tab, assignment), 'value']
+        tab: the table-dataframe
+        assignment (dict): the variable assignment
+        value: the value to put into all selected rows
+    """
+    tab.loc[get_row_bools(tab, assignment), 'value'] = value
+
+
+
 
 
 # Now the actual setup:
