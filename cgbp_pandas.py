@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-%matplotlib inline
+#%matplotlib inline
 import pandas as pd
 from functools import reduce
 import random
@@ -155,12 +155,6 @@ initial_potentials = [
     for c in cluster_factors
 ]
 
-# initialize messages: probability tables over all sepsets with value = 1
-messages = [
-    make_empty_table(variables, sepset, fill_value = 1)
-    for sepset in edge_sepsets
-]
-
 
 
 
@@ -174,8 +168,14 @@ def pick_edge_for_update(edges):
     idx = random.randint(0, len(edges) - 1)
     return idx, edges[idx]
 
+# initialize messages: probability tables over all sepsets with value = 1
+messages = [
+    make_empty_table(variables, sepset, fill_value = 1)
+    for sepset in edge_sepsets
+]
 
-iterations = 100
+
+iterations = 300
 coll = []
 beliefs_coll = []
 
@@ -203,6 +203,11 @@ for _ in range(iterations):
     cluster_vars_without_sepset = cluster_vars[i] - edge_sepsets[edge_idx]
     messages[edge_idx] = marginalize(incoming_with_potential, cluster_vars_without_sepset)
 
+    # message normalization
+    msg_sum = messages[edge_idx]['value'].sum()
+    messages[edge_idx]['value'] /= msg_sum
+
+
     all_incoming_msgs_prod = [
         reduce(multiply_tables, [msg for (c1, c2), msg in zip(cluster_edges, messages) if c2 == i])
         for i, _ in enumerate(clusters)
@@ -215,33 +220,39 @@ for _ in range(iterations):
 
     beliefs_coll.append(current_beliefs)
 
-    # # save data
-    # all_msgs = reduce(multiply_tables, messages)
-    # Z = float(all_msgs['value'].sum())
-    # plot_msg = float(get_assignment(messages[0], {'A':0}))
-    # msg_prob = plot_msg / Z
-    # print(msg_prob)
-
-    #coll.append(plot_msg/all_msgs)
-
-# It stays the same and then explodes at one point. Gotta make more plots of more values at once. Not today.
-
-#plt.plot(coll)
 
 
+def get_assignment_for_row(table, row):
+    return {v: table[v][row] for v in table_varnames(table)}
+
+def normalize_belief(belief):
+    b = belief.copy()
+    s = b['value'].sum()
+    b['value'] /= s
+    return b
 
 
-sums = [reduce(multiply_tables, beliefs)['value'].sum() for beliefs in beliefs_coll]
+n_beliefs = len(clusters)
+for belief_i in range(n_beliefs):
+
+    varnames = table_varnames(initial_potentials[belief_i])
+
+    belief_rows = len(initial_potentials[belief_i])
+    belief_over_time = [beliefs[belief_i] for beliefs in beliefs_coll]
+    normalized_belief_over_time = [normalize_belief(belief) for belief in belief_over_time]
 
 
-for i, _ in enumerate(clusters):
-    for val_i in range(len(initial_potentials[i])):
-        plt.plot([beliefs[i]['value'][val_i]/sum_ for beliefs, sum_ in zip(beliefs_coll, sums)])
+    plt.subplot(n_beliefs, 2, 2*belief_i+1)
 
+    for row in range(belief_rows):
+        line = [
+            normalized_belief_over_time[t]['value'][row]
+            for t in range(len(normalized_belief_over_time))
+        ]
+        assignment = get_assignment_for_row(initial_potentials[belief_i], row)
+        plt.plot(line, label = "P({})".format(assignment))
+    plt.title("Belief #{} over {}".format(belief_i, varnames))
+    plt.legend(bbox_to_anchor=(1.05,1), loc='upper left', borderaxespad=0.0)
 
-
-
-
-
-
-
+plt.tight_layout()
+plt.show()
