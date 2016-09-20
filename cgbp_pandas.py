@@ -163,22 +163,58 @@ clusters = [
 
 # Since its too complex for a few lines, do table multiplication in helper function.
 def multiply_tables(tab1, tab2):
+    """Compute the factor product of two tables.
+
+        tab1: first table
+        tab2: second table
+
+        returns: the factor product of tab1 and tab2
+    """
+
+    # check intersection and union of the variable sets
     varnames_intersect = column_varnames(tab1.columns & tab2.columns)
     varnames_union = column_varnames(tab1.columns | tab2.columns)
+
+    # if the tables do not intersect, add additional merge key
     if not varnames_intersect:
+        # copy to avoid side effects
         tab1 = tab1.copy()
         tab2 = tab2.copy()
         tab1['mergekey'] = 1
         tab2['mergekey'] = 1
         varnames_intersect = 'mergekey'
+
+    # merge tables on intersection-set (or mergekey)
     tab3 = pd.merge(tab1, tab2, on = varnames_intersect)
+
+    # compute value multiplication
     tab3['value'] = tab3['value_x'] * tab3['value_y']
+
+    # select only the variables we need (union + 'Value')
     tab3 = tab3[varnames_union + ['value']]
+
     return tab3
 
+
+
+
 def marginalize(tab, margin_vars):
+    """Compute marginalization of table with respect to variable set.
+
+        tab: table to marginalize
+        margin_vars: variable set to marginlize over
+
+        returns: marginalized table
+    """
+
+    # check which variables to keep
     vars_to_keep = [var for var in table_varnames(tab) if var not in margin_vars]
+
+    # keep these variables and sum over the value for all other variables
     return (tab.groupby(vars_to_keep).sum())[['value']].reset_index()
+
+
+
 
 
 # for every cluster: list of actual factors
