@@ -1,4 +1,5 @@
-import numpy as np
+
+
 import matplotlib.pyplot as plt
 #%matplotlib inline
 import pandas as pd
@@ -115,7 +116,7 @@ variables = {
     'D': [0, 1]
 }
 
-# initialize empty factors over thei variables
+# initialize empty factors over their variables
 phi0 = make_empty_table(variables, ['A', 'B'])
 phi1 = make_empty_table(variables, ['B', 'C'])
 phi2 = make_empty_table(variables, ['C', 'D'])
@@ -275,7 +276,6 @@ messages = [
 
 
 iterations = 300
-coll = []
 beliefs_coll = []
 
 for _ in range(iterations):
@@ -334,14 +334,13 @@ def normalize_belief(belief):
 n_beliefs = len(clusters)
 for belief_i in range(n_beliefs):
 
-    varnames = table_varnames(initial_potentials[belief_i])
 
     belief_rows = len(initial_potentials[belief_i])
     belief_over_time = [beliefs[belief_i] for beliefs in beliefs_coll]
     normalized_belief_over_time = [normalize_belief(belief) for belief in belief_over_time]
 
 
-    plt.subplot(n_beliefs, 2, 2*belief_i+1)
+    plt.figure()
 
     for row in range(belief_rows):
         line = [
@@ -350,6 +349,8 @@ for belief_i in range(n_beliefs):
         ]
         assignment = get_assignment_for_row(initial_potentials[belief_i], row)
         plt.plot(line, label = "P({})".format(assignment))
+    
+    varnames = table_varnames(initial_potentials[belief_i])
     plt.title("Belief #{} over {}".format(belief_i, varnames))
     plt.legend(bbox_to_anchor=(1.05,1), loc='upper left', borderaxespad=0.0)
 
