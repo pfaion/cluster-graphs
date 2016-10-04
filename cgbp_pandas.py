@@ -333,15 +333,15 @@ def normalize_belief(belief):
 
 n_beliefs = len(clusters)
 for belief_i in range(n_beliefs):
+    plt.figure()
 
 
-    belief_rows = len(initial_potentials[belief_i])
     belief_over_time = [beliefs[belief_i] for beliefs in beliefs_coll]
     normalized_belief_over_time = [normalize_belief(belief) for belief in belief_over_time]
 
 
-    plt.figure()
 
+    belief_rows = len(initial_potentials[belief_i])
     for row in range(belief_rows):
         line = [
             normalized_belief_over_time[t]['value'][row]
