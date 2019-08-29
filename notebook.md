@@ -3,6 +3,9 @@
 
 This repository is the result of the seminar **Basic methods of probabilistic reasoning** at the University of Osnabrueck, Germany. It shows my explorations of the concepts of **cluster graph belief propagation** and represents the final submission. The actual Jupyter Notebook can be found in [notebook.ipynb](notebook.ipynb), this README.md has been constructed from the notebook for demonstration purpose.
 
+The content is roughly based on:
+> Koller, Daphne, and Nir Friedman. *Probabilistic Graphical Models: Principles and Techniques.* Cambridge, MA: MIT, 2009. Print.
+
 <a id='1'></a>
 ## 1. Table of Contents
 
@@ -49,14 +52,12 @@ from functools import reduce
 
 The easiest way to represent factors for this example is as distribution tables over a set of variables. The values do not have to correspond to probabilities, since the algorithm works also for markov random fields. Below is an example of how such a table over the variables A and B could look like.
 
-![phi]
-
-| a | b | $\phi$(A=a, B=b) |
+| a | b | ![phi] (A=a, B=b) |
 |---|---|---          |
-| $a_0$ | $b_0$ | 10  |
-| $a_0$ | $b_1$ | 0.1 |
-| $a_1$ | $b_0$ | 0.1 |
-| $a_1$ | $b_1$ | 5   |
+| ![a_0] | ![b_0] | 10  |
+| ![a_0] | ![b_1] | 0.1 |
+| ![a_1] | ![b_0] | 0.1 |
+| ![a_1] | ![b_1] | 5   |
 
 <a id='3.1'></a>
 ### 3.1 Variables
@@ -1024,33 +1025,33 @@ The graph looks like this:
 
 And the specific factors are:
 
-| a | b | $\phi_0$(A=a, B=b) |
+| a | b | ![phi_0] (A=a, B=b) |
 |---|---|---|
-| $a_0$ | $b_0$ | 30 |
-| $a_0$ | $b_1$ | 5 |
-| $a_1$ | $b_0$ | 1 |
-| $a_1$ | $b_1$ | 10 |
+| ![a_0] | ![b_0] | 30 |
+| ![a_0] | ![b_1] | 5 |
+| ![a_1] | ![b_0] | 1 |
+| ![a_1] | ![b_1] | 10 |
 
-| b | c | $\phi_1$(B=b, C=c) |
+| b | c | ![phi_1] (B=b, C=c) |
 |---|---|---|
-| $b_0$ | $c_0$ | 100 |
-| $b_0$ | $c_1$ | 1 |
-| $b_1$ | $c_0$ | 1 |
-| $b_1$ | $c_1$ | 100 |
+| ![b_0] | ![c_0] | 100 |
+| ![b_0] | ![c_1] | 1 |
+| ![b_1] | ![c_0] | 1 |
+| ![b_1] | ![c_1] | 100 |
 
-| c | d | $\phi_2$(C=c, D=d) |
+| c | d | ![phi_2] (C=c, D=d) |
 |---|---|---|
-| $c_0$ | $d_0$ | 1 |
-| $c_0$ | $d_1$ | 100 |
-| $c_1$ | $d_0$ | 100 |
-| $c_1$ | $d_1$ | 1 |
+| ![c_0] | ![d_0] | 1 |
+| ![c_0] | ![d_1] | 100 |
+| ![c_1] | ![d_0] | 100 |
+| ![c_1] | ![d_1] | 1 |
 
-| d | a | $\phi_3$(D=d, A=a) |
+| d | a | ![phi_3] (D=d, A=a) |
 |---|---|---|
-| $d_0$ | $a_0$ | 100 |
-| $d_0$ | $a_1$ | 1 |
-| $d_1$ | $a_0$ | 1 |
-| $d_1$ | $a_1$ | 100 |
+| ![d_0] | ![a_0] | 100 |
+| ![d_0] | ![a_1] | 1 |
+| ![d_1] | ![a_0] | 1 |
+| ![d_1] | ![a_1] | 100 |
 
 <a id='4.2'></a>
 ### 4.2 Creating the Factors
@@ -1099,7 +1100,7 @@ for (d, a, val) in [(0, 0, 100),
 factors = [phi0, phi1, phi2, phi3]
 ```
 
-Now e.g. factor $\phi_0$ looks like this:
+Now e.g. factor ![phi_0] looks like this:
 
 
 ```python
@@ -1548,5 +1549,18 @@ plt.show()
 
 <!-- LaTeX Images -->
 
-  [phi]: latex.codecogs.com/png.latex?\phi
+[phi]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;\phi
 
+[phi_0]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;\phi_0
+[phi_1]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;\phi_1
+[phi_2]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;\phi_2
+[phi_3]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;\phi_3
+
+[a_0]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;a_0
+[a_1]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;a_1
+[b_0]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;b_0
+[b_1]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;b_1
+[c_0]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;c_0
+[c_1]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;c_1
+[d_0]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;d_0
+[d_1]: https://latex.codecogs.com/png.latex?\inline&space;\dpi{110}&space;\large&space;d_1
