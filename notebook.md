@@ -1,6 +1,8 @@
 
 # Cluster Graph Belief Propagation
 
+This repository is the result of the seminar **Basic methods of probabilistic reasoning** at the University of Osnabrueck, Germany. It shows my explorations of the concepts of **cluster graph belief propagation** and represents the final submission. The actual Jupyter Notebook can be found in [notebook.ipynb](notebook.ipynb), this README.md has been constructed from the notebook for demonstration purpose.
+
 <a id='1'></a>
 ## 1. Table of Contents
 
