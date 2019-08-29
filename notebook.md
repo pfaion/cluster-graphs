@@ -49,6 +49,8 @@ from functools import reduce
 
 The easiest way to represent factors for this example is as distribution tables over a set of variables. The values do not have to correspond to probabilities, since the algorithm works also for markov random fields. Below is an example of how such a table over the variables A and B could look like.
 
+![phi]
+
 | a | b | $\phi$(A=a, B=b) |
 |---|---|---          |
 | $a_0$ | $b_0$ | 10  |
@@ -1542,4 +1544,9 @@ plt.show()
 
 
 ![png](notebook_files/notebook_84_3.png)
+
+
+<!-- LaTeX Images -->
+
+  [phi]: latex.codecogs.com/png.latex?\phi
 
