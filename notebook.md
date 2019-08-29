@@ -123,7 +123,7 @@ make_empty_table(variables, ['A', 'B'])
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -178,7 +178,7 @@ make_empty_table(
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -239,7 +239,7 @@ make_empty_table(variables, [], 1)
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -304,7 +304,7 @@ tmp_tab
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -420,7 +420,7 @@ tmp_tab
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -521,7 +521,7 @@ tmp_tab
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -571,7 +571,7 @@ tmp_tab
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -621,7 +621,7 @@ tmp_tab
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -755,7 +755,7 @@ tmp_tab1
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -810,7 +810,7 @@ tmp_tab2
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -860,7 +860,7 @@ tmp_tab_multi
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -965,7 +965,7 @@ marginalize(tmp_tab_multi, ['C'])
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -1111,7 +1111,7 @@ phi0
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
@@ -1298,7 +1298,7 @@ initial_potentials[0]
 
 
 <div>
-<table border="1" class="dataframe">
+<table class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
